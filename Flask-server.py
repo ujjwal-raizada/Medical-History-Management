@@ -5,9 +5,7 @@ from time import time
 from uuid import uuid4
 
 from flask import Flask, jsonify, request
-import Blockchain
-
-blockchain = Blockchain.Blockchain()
+from Blockchain import Blockchain
 
 server = Flask(__name__)
 
@@ -16,8 +14,12 @@ node_identifier = str(uuid4()).replace('-', '')
 
 
 
-@server.route('/mine', methods=['GET'])
+@server.route('/mine', methods=['POST'])
 def mine():
+
+    values = request.get_json()
+    blockchain = Blockchain.get_blockchain(values['user'])
+
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
     last_proof = last_block['proof']
@@ -42,6 +44,7 @@ def mine():
 @server.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
+    blockchain = Blockchain.get_blockchain(values['user'])
     print(values)
 
     # Check that the required fields are in the POST'ed data
@@ -56,8 +59,12 @@ def new_transaction():
     return jsonify(response), 201
 
 
-@server.route('/chain', methods=['GET'])
+@server.route('/chain', methods=['POST'])
 def full_chain():
+
+    values = request.get_json()
+    blockchain = Blockchain.get_blockchain(values['user'])
+
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
@@ -68,6 +75,7 @@ def full_chain():
 @server.route('/nodes/register', methods=['POST'])
 def register_nodes():
     values = request.get_json()
+    blockchain = Blockchain.get_blockchain(values['user'])
 
     nodes = values.get('nodes')
     if nodes is None:
@@ -83,8 +91,12 @@ def register_nodes():
     return jsonify(response), 201
 
 
-@server.route('/nodes/resolve', methods=['GET'])
+@server.route('/nodes/resolve', methods=['POST'])
 def consensus():
+
+    values = request.get_json()
+    blockchain = Blockchain.get_blockchain(values['user'])
+
     replaced = blockchain.resolve_conflicts()
 
     if replaced:
