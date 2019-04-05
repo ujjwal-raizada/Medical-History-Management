@@ -5,13 +5,17 @@ from uuid import uuid4
 from urllib.parse import urlparse
 
 import requests
+import pickle
 
 class Blockchain(object):
 
 
-    def __init__(self):
+    blockchain_list = []
+
+    def __init__(self, user):
         self.chain = []
         self.current_transactions = []
+        self.user = user
 
         # using set so that single user never exists twice
         self.nodes = set()
@@ -187,5 +191,52 @@ class Blockchain(object):
             return True
 
         return False
+
+    @staticmethod
+    def create_new_blockchain(user):
+
+        """
+        param user: <string> username
+        return Blockchain object
+        """
+
+        new_blockchain = Blockchain(user)
+        Blockchain.blockchain_list.append(new_blockchain)
+
+        return new_blockchain
+
+    @staticmethod
+    def save_blockchains():
+        """
+        return <list> list of Blockchain objects
+        using pickle to store list of blockchain
+        """
+
+        with open('database', 'wb') as file:
+            pickle.dump(Blockchain.blockchain_list, file)
+
+    @staticmethod
+    def load_blockchains():
+        Blockchain.blockchain_list = []
+
+        with open('database', 'wb') as file:
+            Blockchain.blockchain_list = pickle.load(file)
+
+        print(Blockchain.blockchain_list)
+
+    @staticmethod
+    def get_blockchain(user):
+
+        for blockchain in Blockchain.blockchain_list:
+            if blockchain.user == user:
+                return blockchain
+
+        return Blockchain.create_new_blockchain(user)
+            
+
+
+
+
+
 
 
