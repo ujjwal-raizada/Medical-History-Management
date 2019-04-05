@@ -22,6 +22,9 @@ class Blockchain(object):
 
         # Create the genesis block
         self.new_block(previous_hash=1, proof=100)
+
+        # load blockchains from database
+        Blockchain.load_blockchains()
         
     def new_block(self, proof, previous_hash=None):
         """
@@ -39,28 +42,30 @@ class Blockchain(object):
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
 
+        print("block created: {}".format(block))
+
         # Reset the current list of transactions
         self.current_transactions = []
 
         self.chain.append(block)
         return block
     
-    def new_transaction(self, sender, recipient, amount):
+    def new_transaction(self, user, report):
         # Adds a new transaction to the list of transactions
         
         """
         Creates a new transaction to go into the next mined Block
-        :param sender: <str> Address of the Sender
-        :param recipient: <str> Address of the Recipient
-        :param amount: <int> Amount
+        :param user: <str> Address of the user
+        :param report: <int> report
         :return: <int> The index of the Block that will hold this transaction
         """
 
         self.current_transactions.append({
-            'sender': sender,
-            'recipient': recipient,
-            'amount': amount,
+            'user': user,
+            'report': report,
         })
+
+        print("Transaction added by user: {}".format(user))
 
         return self.last_block['index'] + 1
     
@@ -219,7 +224,7 @@ class Blockchain(object):
     def load_blockchains():
         Blockchain.blockchain_list = []
 
-        with open('database', 'wb') as file:
+        with open('database', 'rb') as file:
             Blockchain.blockchain_list = pickle.load(file)
 
         print(Blockchain.blockchain_list)
