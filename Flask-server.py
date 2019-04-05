@@ -48,12 +48,12 @@ def new_transaction():
     print(values)
 
     # Check that the required fields are in the POST'ed data
-    required = ['sender', 'recipient', 'amount']
+    required = ['user', 'report']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index = blockchain.new_transaction(values['user'] , values['report'])
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
