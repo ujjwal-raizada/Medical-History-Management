@@ -48,6 +48,7 @@ class Blockchain(object):
         self.current_transactions = []
 
         self.chain.append(block)
+        Blockchain.save_blockchains()
         return block
     
     def new_transaction(self, user, report):
@@ -207,6 +208,7 @@ class Blockchain(object):
 
         new_blockchain = Blockchain(user)
         Blockchain.blockchain_list.append(new_blockchain)
+        Blockchain.save_blockchains()
 
         return new_blockchain
 
