@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+
+
+{% from "_formhelpers.html" import render_field %}
+<form method=post>
+  <dl>
+    {{ render_field(form.username) }}
+  </dl>
+  <p><input type=submit value=Register>
+</form>
+
+<br>
+<br>
+{% if data %}
+<table>
+    <tr>
+        <th>user</th>
+        <th>Report</th>
+        
+      </tr>
+  
+    {% for report in data %}
+      {% if report %}
+        {% for r in report %}
+        <tr>
+          {% for key, value in r.items() %}
+            <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+      
+  
+</table>
+{% endif %}
+
+</body>
+</html>
