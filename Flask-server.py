@@ -4,113 +4,53 @@ from textwrap import dedent
 from time import time
 from uuid import uuid4
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, flash, redirect, url_for, render_template
+
+from forms import AddMedicalHistoryForm, ViewMedicalHistoryForm
 from Blockchain import Blockchain
+from controllers import mine, new_transaction, full_chain, register_nodes, consensus
 
 server = Flask(__name__)
 
-# Generate a globally unique address for this node
-node_identifier = str(uuid4()).replace('-', '')
+@server.route('/', methods=['GET'])
+def home():
+    return render_template('index.html')
+
+@server.route('/addreport', methods=['POST', 'GET'])
+def addreport():
+    form = AddMedicalHistoryForm(request.form)
+
+    if (request.method == 'POST' and form.validate()):
+        user = form.username.data
+        report = form.report.data
+
+        new_transaction(user, report)
+        mine(user)
+
+        return redirect(url_for('home'))
+
+    return render_template('addreport.html', form=form)
 
 
+@server.route('/viewreport', methods=['POST', 'GET'])
+def viewreport():
+    form = ViewMedicalHistoryForm(request.form)
 
-@server.route('/mine', methods=['POST'])
-def mine():
+    if (request.method == 'POST' and form.validate()):
+        
+        chain = full_chain(form.username.data)
+        print(chain)
+        report_view = []
+        for block in chain['chain']:
+            report_view.append(block['transactions'])
 
-    values = request.get_json()
-    blockchain = Blockchain.get_blockchain(values['user'])
+        print(report_view)
 
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    last_proof = last_block['proof']
-    proof = blockchain.proof_of_work(last_proof)
+        return render_template('viewreport.html', data=report_view, form=form)
 
-    # No reward for mining :P 
-
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
-
-    response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
-    }
-    return jsonify(response), 200
-  
-
-@server.route('/transactions/new', methods=['POST'])
-def new_transaction():
-    values = request.get_json()
-    blockchain = Blockchain.get_blockchain(values['user'])
-    print(values)
-
-    # Check that the required fields are in the POST'ed data
-    required = ['user', 'report']
-    if not all(k in values for k in required):
-        return 'Missing values', 400
-
-    # Create a new Transaction
-    index = blockchain.new_transaction(values['user'] , values['report'])
-
-    response = {'message': f'Transaction will be added to Block {index}'}
-    return jsonify(response), 201
+    return render_template('viewreport.html', form=form)
 
 
-@server.route('/chain', methods=['POST'])
-def full_chain():
-
-    values = request.get_json()
-    blockchain = Blockchain.get_blockchain(values['user'])
-
-    response = {
-        'chain': blockchain.chain,
-        'length': len(blockchain.chain),
-    }
-    return jsonify(response), 200
-
-
-@server.route('/nodes/register', methods=['POST'])
-def register_nodes():
-    values = request.get_json()
-    blockchain = Blockchain.get_blockchain(values['user'])
-
-    nodes = values.get('nodes')
-    if nodes is None:
-        return "Error: Please supply a valid list of nodes", 400
-
-    for node in nodes:
-        blockchain.register_node(node)
-
-    response = {
-        'message': 'New nodes have been added',
-        'total_nodes': list(blockchain.nodes),
-    }
-    return jsonify(response), 201
-
-
-@server.route('/nodes/resolve', methods=['POST'])
-def consensus():
-
-    values = request.get_json()
-    blockchain = Blockchain.get_blockchain(values['user'])
-
-    replaced = blockchain.resolve_conflicts()
-
-    if replaced:
-        response = {
-            'message': 'Our chain was replaced',
-            'new_chain': blockchain.chain
-        }
-    else:
-        response = {
-            'message': 'Our chain is authoritative',
-            'chain': blockchain.chain
-        }
-
-        return jsonify(response), 200
 
 if __name__ == '__main__':
     server.run(host='0.0.0.0', port=5000)
