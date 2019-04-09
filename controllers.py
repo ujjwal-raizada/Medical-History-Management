@@ -41,13 +41,13 @@ def mine(user):
   
 
 
-def new_transaction(user, report):
+def create_transaction(user, doctor, report, tup):
 
     blockchain = Blockchain.get_blockchain(user)
 
 
     # Create a new Transaction
-    index = blockchain.new_transaction(user , report)
+    index = blockchain.new_transaction(user, doctor, report, tup)
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return response

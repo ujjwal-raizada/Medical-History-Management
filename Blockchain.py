@@ -3,6 +3,7 @@ import json
 from time import time
 from uuid import uuid4
 from urllib.parse import urlparse
+from zkp import verify
 
 import requests
 import pickle
@@ -51,8 +52,13 @@ class Blockchain(object):
         Blockchain.save_blockchains()
         return block
     
-    def new_transaction(self, user, report):
+    def new_transaction(self, user, doctor, report, tup):
         # Adds a new transaction to the list of transactions
+
+        # tup: y, s, t1, t2, t3 
+
+        if (not verify(tup)):
+            return False
         
         """
         Creates a new transaction to go into the next mined Block
@@ -63,6 +69,7 @@ class Blockchain(object):
 
         self.current_transactions.append({
             'user': user,
+            'doctor': doctor,
             'report': report,
         })
 
