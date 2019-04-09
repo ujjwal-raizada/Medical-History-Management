@@ -24,10 +24,13 @@ password = ''
 @server.route('/', methods=['GET'])
 def home():
 
+    global loggedin
+    global loggedin_user
+
     if(not loggedin):
         return redirect('/login')
 
-    return render_template('index.html')
+    return render_template('index.html', user=loggedin_user + " (logout)")
 
 @server.route('/addreport', methods=['POST', 'GET'])
 def addreport():
@@ -54,7 +57,7 @@ def addreport():
 
         return redirect(url_for('home'))
 
-    return render_template('addreport.html', form=form)
+    return render_template('addreport.html', form=form, user=loggedin_user + " (logout)")
 
 
 @server.route('/viewreport', methods=['POST', 'GET'])
@@ -63,7 +66,9 @@ def viewreport():
     if(not loggedin):
         return redirect('/login')
 
+
     form = ViewMedicalHistoryForm(request.form)
+    global loggedin_user
 
     if (request.method == 'POST' and form.validate()):
         
@@ -75,9 +80,18 @@ def viewreport():
 
         print(report_view)
 
-        return render_template('viewreport.html', data=report_view, form=form)
+        return render_template('viewreport.html', data=report_view, form=form, user=loggedin_user + " (logout)")
 
-    return render_template('viewreport.html', form=form)
+    return render_template('viewreport.html', form=form, user=loggedin_user + " (logout)")
+
+@server.route('/logout', methods=['GET'])
+def logout():
+    global loggedin
+    global loggedin_user
+
+    loggedin = False
+    loggedin_user = ''
+    return redirect('/login')
 
 
 @server.route('/login', methods=['GET', 'POST'])
