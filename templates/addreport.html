@@ -1,8 +1,11 @@
-{% from "_formhelpers.html" import render_field %}
-<form method=post>
-  <dl>
-    {{ render_field(form.username) }}
-    {{ render_field(form.report) }}
-  </dl>
-  <p><input type=submit value=Register>
-</form>
+{% extends "layout.html" %}
+{% block content %}
+    {% from "_formhelpers.html" import render_field %}
+	<form method=post>
+	  <dl>
+	    {{ render_field(form.username) }}
+	    {{ render_field(form.report) }}
+	  </dl>
+	  <p><input type=submit class="btn btn-primary btn-lg active" value=Register>
+	</form>
+{% endblock content %}
