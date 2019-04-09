@@ -6,11 +6,15 @@ from uuid import uuid4
 
 from flask import Flask, jsonify, request, flash, redirect, url_for, render_template
 
-from forms import AddMedicalHistoryForm, ViewMedicalHistoryForm
+from forms import AddMedicalHistoryForm, ViewMedicalHistoryForm, LoginForm
 from Blockchain import Blockchain
 from controllers import mine, new_transaction, full_chain, register_nodes, consensus
 
+from config import Config
+from login import check_login
+
 server = Flask(__name__)
+server.config.from_object(Config)
 
 @server.route('/', methods=['GET'])
 def home():
@@ -49,6 +53,30 @@ def viewreport():
         return render_template('viewreport.html', data=report_view, form=form)
 
     return render_template('viewreport.html', form=form)
+
+
+@server.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if (request.method == 'POST' and form.validate_on_submit()):
+
+        username = form.username.data
+        password = form.password.data
+
+        temp  = check_login(username, password)
+
+        flash('Login requested for user {}, remember_me={}'.format(
+            form.username.data, form.remember_me.data))
+
+        if(temp != 0):
+            return redirect('/')
+
+        else:
+            flash('Invalid username or password')
+            return redirect('/login')
+
+    return render_template('login.html', title='Sign In', form=form)
 
 
 
